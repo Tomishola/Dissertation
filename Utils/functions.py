@@ -6,10 +6,12 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import nltk
-import joblib  # For loading the saved model (scikit-learn, etc.)
-# import your specific model loading library if it's different (e.g., TensorFlow or PyTorch)
+import joblib 
+import spacy  
+from tqdm import tqdm
 
 # Download required NLTK resources
+nltk.download('punkt_tab')
 nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
@@ -102,3 +104,41 @@ def clean_article(article):
     cleaned_article = ' '.join(cleaned_tokens)
 
     return cleaned_article
+
+nlp = spacy.load('en_core_web_sm')
+
+def extract_names(text):
+    """Extracts person names from text using spaCy's NER."""
+    doc = nlp(text)
+    return [ent.text for ent in doc.ents if ent.label_ == "PERSON"]
+
+def extract_clubs(text):
+    """Extracts organizations (e.g., clubs) from text using spaCy's NER."""
+    doc = nlp(text)
+    return [ent.text for ent in doc.ents if ent.label_ == "ORG"]
+
+def extract_fee(text):
+    """Extracts monetary amounts from text using spaCy's NER."""
+    doc = nlp(text)
+    return [ent.text for ent in doc.ents if ent.label_ == "MONEY"]
+
+# Test usage
+if __name__ == "__main__":
+    # Sample article text
+    article_text = "Lionel Messi signed a deal with Paris Saint-Germain for $41 million."
+
+    
+    # Extract named entities
+    names = extract_names(article_text)
+    clubs = extract_clubs(article_text)
+    fees = extract_fee(article_text)
+
+    # Clean the article
+    cleaned_text = clean_article(article_text)
+
+
+    print(f"cleaned_text: {cleaned_text}")
+
+    print(f"Names: {names}")
+    print(f"Clubs: {clubs}")
+    print(f"Fees: {fees}")
